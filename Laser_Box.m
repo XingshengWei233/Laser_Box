@@ -9,10 +9,12 @@ classdef Laser_Box
         T %material thickness
         lid %if lid exist
         divider %0 for no divider, 1/3, 1/2, 2/3
+        side_text
+        lid_text
     end
     
     methods
-        function obj = Laser_Box(X,Y,Z,T,lid,divider)
+        function obj = Laser_Box(X,Y,Z,T,lid,divider,side_text,lid_text)
             %LASER_BOX Construct an instance of this class
             %   Detailed explanation goes here
             obj.X = X;
@@ -21,6 +23,8 @@ classdef Laser_Box
             obj.T = T;
             obj.lid = lid;
             obj.divider = divider;
+            obj.side_text = side_text;
+            obj.lid_text = lid_text;
         end
         
         function shape = screw_slot(obj,x,y,o)
@@ -70,7 +74,7 @@ classdef Laser_Box
             x = obj.X;
             z = obj.Z;
             t = obj.T;
-             x_face=[t t/2;x-t t/2;x-t z/4;x z/4;x 3*z/4;x-t 3*z/4;x-t z-t;3*x/4 z-t;3*x/4,z;x/4 z;x/4 z-t;t z-t;t 3*z/4;0 3*z/4;
+             x_face=[t 0;x-t 0;x-t z/4;x z/4;x 3*z/4;x-t 3*z/4;x-t z-t;3*x/4 z-t;3*x/4,z;x/4 z;x/4 z-t;t z-t;t 3*z/4;0 3*z/4;
                  0 z/4;t z/4;t 0];
         end
         
@@ -85,7 +89,7 @@ classdef Laser_Box
         function holes = y_face_hole(obj)
             holes = obj.screw_hole(obj.Y/2,obj.Z-obj.T/2);
             if obj.lid == true
-                holes(2,:) = [5,-2,4.5/2];
+                holes(2,:) = [7.5,-1.5,4.5/2];
             end
         end
         
@@ -101,7 +105,7 @@ classdef Laser_Box
             t = obj.T;
             if obj.lid == true
                 % lid holder dimention 
-                r=5; %% mm
+                r=7.5; %% mm
                 theta=0:-pi/10:-pi;
                 xc = (r * cos(theta) + r)';
                 yc = (r * sin(theta) + 0)';
@@ -185,34 +189,34 @@ classdef Laser_Box
                 pattern(:,2,n) = pattern(:,2,n)+offset(2);
                 fprintf(file,'  <polygon points="');
                 for i = 1:size(pattern,1)
-                    fprintf(file,'%d,%d ',pattern(i,:,n));
+                    fprintf(file,'%8.3f,%8.3f ',pattern(i,:,n));
                 end
                 fprintf(file,'" \n fill="none" stroke="blue" />\n');
             end
         end
         
         function fprintf_text(obj,file,offset,text)
-            xy = [obj.X/2,obj.Z/2];
+            %xy = [obj.X/2,obj.Z/2];
             size = 6;
             fprintf(file,'\n<!--text--> \n');
             fprintf(file,'  <style>\n');
-            fprintf(file,'  .small { font: bold %dpx sans-serif; }',size);
-            fprintf(file,'  </style>');
-            fprintf(file,'  <text x="%d" y="%d" text-anchor="middle" class="small"> ',xy+offset);
+            fprintf(file,'  .small { font: bold %dpx sans-serif; fill: red;}\n',size);
+            fprintf(file,'  </style>\n');
+            fprintf(file,'  <text x="%d" y="%d" text-anchor="middle" class="small"> ',offset);
             fprintf(file,text);
             fprintf(file,' </text>\n');
             
         end
         
         function fprintf_image(obj,file,offset,image)
-            xy = [obj.X/2,obj.Z/2];
+            xy = [0,0];
             size = [10 10];
             currentFolder = pwd;
             fprintf(file,'\n<!--image--> \n');
             fprintf(file,'  <image xlink:href="');
             fprintf(file,image);
-            fprintf(file,'" x="%d" y="%d"',xy+offset);
-            fprintf(file,'" width="%d" height="%d"',size);
+            fprintf(file,'" x="%8.3f" y="%8.3f"',xy+offset);
+            fprintf(file,'" width="%8.3f" height="%8.3f"',size);
             fprintf(file,' />\n');
             
         end
@@ -226,7 +230,7 @@ classdef Laser_Box
             verteces(:,1) = verteces(:,1)+offset(1);
             verteces(:,2) = verteces(:,2)+offset(2);
             for i = 1:nVert
-                fprintf(file,'%d,%d ',verteces(i,:));
+                fprintf(file,'%8.3f,%8.3f ',verteces(i,:));
             end
             fprintf(file,'" \n fill="none" stroke="black" />\n');
             
@@ -237,7 +241,7 @@ classdef Laser_Box
                 holes(:,1) = holes(:,1)+offset(1);
                 holes(:,2) = holes(:,2)+offset(2);
                 for i = 1:nHole
-                    fprintf(file,'  <circle cx="%d" cy="%d" r="%d"  fill="none" stroke="black" />\n',holes(i,:));
+                    fprintf(file,'  <circle cx="%8.3f" cy="%8.3f" r="%8.3f"  fill="none" stroke="black" />\n',holes(i,:));
                 end
             end
         end
@@ -256,8 +260,8 @@ classdef Laser_Box
             obj.fprintf_face(file,base_offset,obj.base_face(),[]);
             
             obj.fprintf_face(file,xf_offset1,obj.x_face(),obj.x_face_hole());
-            obj.fprintf_text(file,xf_offset1,'Digital Manufacturing');
-            obj.fprintf_image(file,xf_offset1,'logo.png');
+            obj.fprintf_text(file,xf_offset1+[obj.X/2,obj.Z/2],obj.side_text);
+            %obj.fprintf_image(file,xf_offset1,'logo.png');
             
             obj.fprintf_face(file,xf_offset2,obj.x_face(),obj.x_face_hole());
             
@@ -271,6 +275,7 @@ classdef Laser_Box
             if obj.lid == true
                 lf_offset = [obj.X+2*obj.T+obj.Y,6];
                 obj.fprintf_face(file,lf_offset,obj.lid_face(),[]);
+                obj.fprintf_text(file,lf_offset+[obj.X/2,obj.Y/2],obj.lid_text);
             end
             if obj.divider ~= 0
                 df_offset = [obj.X+obj.T,12+2*obj.Z+obj.T];
