@@ -1,6 +1,6 @@
 classdef Laser_Box
-    %LASER_BOX Summary of this class goes here
-    %   Detailed explanation goes here
+    %LASER_BOX Class
+    %create each face of the box on the SVG file, and create the SVG file
     
     properties
         X %length
@@ -8,7 +8,7 @@ classdef Laser_Box
         Z %height
         T %material thickness
         lid %if lid exist
-        divider %0 for no divider, 1/3, 1/2, 2/3
+        divider %0 for no divider, 1/3, 1/2, 2/3 for divider position
         side_text
         lid_text
     end
@@ -16,7 +16,6 @@ classdef Laser_Box
     methods
         function obj = Laser_Box(X,Y,Z,T,lid,divider,side_text,lid_text)
             %LASER_BOX Construct an instance of this class
-            %   Detailed explanation goes here
             obj.X = X;
             obj.Y = Y;
             obj.Z = Z;
@@ -28,8 +27,9 @@ classdef Laser_Box
         end
         
         function shape = screw_slot(obj,x,y,o)
-            %SCREW_SLOT Summary of this function goes here
+            %SCREW_SLOT Create a screw slot
             %   o: orientation U(up),D(down),L(left),R(right)
+            %   x,y: position of screw slot
             t=obj.T;
             shape = [1 0; 1 6-t; 2.3 6-t; 2.3 7.5-t; 1 7.5-t; 1 10.5-t;
                 -1 10.5-t; -1 7.5-t; -2.3 7.5-t; -2.3 6-t; -1 6-t; -1 0];%upward
@@ -47,7 +47,7 @@ classdef Laser_Box
         end
        
         function hole = screw_hole(~,x,y)
-            %SCREW_HOLE Summary of this function goes here
+            %SCREW_HOLE Create a screw hole
             %   Detailed explanation goes here
             cx = x;
             cy = y;
