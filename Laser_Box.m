@@ -20,8 +20,8 @@ classdef Laser_Box
             obj.Y = Y;
             obj.Z = Z;
             obj.T = T;
-            obj.lid = lid;
-            obj.divider = divider;
+            obj.lid = lid; % Y or N
+            obj.divider = divider; % 0, 1/3, 1/2, 2/3
             obj.side_text = side_text;
             obj.lid_text = lid_text;
         end
@@ -48,7 +48,7 @@ classdef Laser_Box
        
         function hole = screw_hole(~,x,y)
             %SCREW_HOLE Create a screw hole
-            %   Detailed explanation goes here
+            %   x,y: position of screw hole
             cx = x;
             cy = y;
             r = 1; %mm
@@ -56,21 +56,19 @@ classdef Laser_Box
         end
         
         function base = base_face(obj)
-            % x is the horizontal length
-            % y is the vertical length downward
-            % t is the thick ness
-            x = obj.X;
-            y = obj.Y;
-            t = obj.T;
+            %BASE_FACE Create the base face of the box
+            %   output an array of points that making the shape of the base face
+            x = obj.X; %horizontal length
+            y = obj.Y; %vertical length downward
+            t = obj.T; %material thickness
             base=[0 0;x/4 0;x/4 t;flip(screw_slot(obj,x/2,t,'U'));3*x/4 t;3*x/4,0;x 0;x y/4;x-t y/4;flip(screw_slot(obj,x-t,y/2,'L'));x-t 3*y/4;
                 x 3*y/4;x y;3*x/4 y;3*x/4 y-t;flip(screw_slot(obj,x/2,y-t,'D'));x/4 y-t;x/4 y;0 y;0 3*y/4;t 3*y/4;flip(screw_slot(obj,t,y/2,'R'));
                 t y/4;0 y/4;0 0];
         end
         
         function x_face=x_face(obj)
-            % x is the length of the face
-            % y is the height of the face 
-            % t is the thickness of the acrylic
+            %X_FACE Create the x orientation face of the box
+            %   output an array of points that making the shape of the x face
             x = obj.X;
             z = obj.Z;
             t = obj.T;
@@ -79,6 +77,8 @@ classdef Laser_Box
         end
         
         function holes = x_face_hole(obj)
+            %X_FACE_HOLE Create screw holes on the x face
+            %   output an array of screw hole positions on the x face
             z=obj.Z;
             t=obj.T;
             x=obj.X;
@@ -87,6 +87,8 @@ classdef Laser_Box
         end
         
         function holes = y_face_hole(obj)
+            %Y_FACE_HOLE Create screw holes on the y face
+            %   output an array of screw hole positions on the y face
             holes = obj.screw_hole(obj.Y/2,obj.Z-obj.T/2);
             if obj.lid == true
                 holes(2,:) = [7.5,-1.5,4.5/2];
@@ -94,12 +96,8 @@ classdef Laser_Box
         end
         
         function y_face=y_face(obj)
-            % x is the length of the face
-            % y is the height of the face 
-            % t is the thickness of the acrylic
-            % a is the answer of wether or not require a lid "Y"/"N"
-            % b is the anser of wether or not require a divider "Y"/"N" ???
-            % l is the location of the lid 1/3, 1/2, 2/3 ???
+            %Y_FACE Create the x orientation face of the box
+            %   output an array of points that making the shape of the y face
             y = obj.Y;
             z = obj.Z;
             t = obj.T;
@@ -119,6 +117,8 @@ classdef Laser_Box
         end
         
         function lid_face = lid_face(obj)
+            %LID_HOLE Create screw holes on the y face
+            %   output an array of screw hole positions on the lid face
             x=obj.X;
             y=obj.Y;
             t=obj.T;
@@ -128,6 +128,8 @@ classdef Laser_Box
         end
         
         function divider_face = divider_face(obj)
+            %DIVIDER_HOLE Create screw holes on the y face
+            %   output an array of screw hole positions on the divider face
             x=obj.X;
             z=obj.Z;
             t=obj.T;
@@ -135,6 +137,8 @@ classdef Laser_Box
         end
         
         function slot = divider_slot(obj)
+            %DIVIDER_SLOT Create slot for divider on the y face
+            %   output an array of points for the shape of the divider slot
             t=obj.T;
             z=obj.Z;
             y=obj.Y;
@@ -151,7 +155,8 @@ classdef Laser_Box
          end
         
         function pattern = decoration(obj)
-                % center circle dimention 
+                %DIVIDER_SLOT Create a decoration pattern
+                %   output an array of points for the decoration pattern
                 x=obj.X;
                 z=obj.Z;
                 r0=min(z,x)/4; %% mm
@@ -182,6 +187,7 @@ classdef Laser_Box
         end
         
         function fprintf_pattern(~,file,offset,pattern)
+            %   output the SVG text for the decoration pattern
             fprintf(file,'\n<!--pattern--> \n');
             pattern = pattern*1; %scale
             for n = 1:size(pattern,3)
@@ -196,7 +202,7 @@ classdef Laser_Box
         end
         
         function fprintf_text(obj,file,offset,text)
-            %xy = [obj.X/2,obj.Z/2];
+            %   output the SVG text for the text on the faces
             size = 6;
             fprintf(file,'\n<!--text--> \n');
             fprintf(file,'  <style>\n');
@@ -209,6 +215,7 @@ classdef Laser_Box
         end
         
         function fprintf_image(obj,file,offset,image)
+            %   output the SVG text for image
             xy = [0,0];
             size = [10 10];
             currentFolder = pwd;
@@ -222,6 +229,7 @@ classdef Laser_Box
         end
         
         function fprintf_face(~,file,offset,verteces,holes)
+            %   output the SVG text for faces
             %if no hole put [] for holes
             fprintf(file,'\n<!--face--> \n');
             fprintf(file,'  <polygon points="');
@@ -247,6 +255,7 @@ classdef Laser_Box
         end
         
         function create_svg(obj,file_name)
+            %CREATE_SVG Create the SVG file for the box
             file = fopen(file_name,'w');
             fprintf(file,'<?xml version ="1.0" encoding="UTF-8" ?>\n');
             fprintf(file,'<svg xmlns="http://www.w3.org/2000/svg" version="1.1">\n');
@@ -261,10 +270,8 @@ classdef Laser_Box
             
             obj.fprintf_face(file,xf_offset1,obj.x_face(),obj.x_face_hole());
             obj.fprintf_text(file,xf_offset1+[obj.X/2,obj.Z/2],obj.side_text);
-            %obj.fprintf_image(file,xf_offset1,'logo.png');
             
             obj.fprintf_face(file,xf_offset2,obj.x_face(),obj.x_face_hole());
-            
             
             obj.fprintf_face(file,yf_offset1,obj.y_face(),obj.y_face_hole());
             obj.fprintf_face(file,yf_offset1,obj.divider_slot(),[]);
