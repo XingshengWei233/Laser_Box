@@ -11,7 +11,7 @@ Main script to ask the user to input the parameters and generate the SVG file.
 ### Laser_Box.m
 A class that contains the parameters and functions that generates each feature (faces, lid, text, corresponding SVG code) of the box.
 ## Approach
-1. Wrote a LaserBox class that contains the parameters and functions that generates each feature (faces, lid, text) of the box. /
-2. Added a function to the LaserBox class to write XML text of the SVG format to an SVG file. /
-3. Wrote a main script to ask the user to input the parameters and generate the SVG file. /
+1. Wrote a LaserBox class that contains the parameters and functions that generates each feature (faces, lid, text) of the box. 
+2. Added a function to the LaserBox class to write XML text of the SVG format to an SVG file. 
+3. Wrote a main script to ask the user to input the parameters and generate the SVG file. 
 ![alt text](https://github.com/XingshengWei233/Laser_Box/blob/main/image/generated%20SVG.PNG)
